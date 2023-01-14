@@ -19,6 +19,11 @@ import HeaderDecider from "./Component/User/HeaderDecider";
 import { useDispatch } from "react-redux";
 import { loaduser } from "./Redux/reducer/authregister";
 import Alertss from "./Component/layouts/alerts";
+import Protected from "./Component/layouts/priviteRoute";
+import RegisterForm from "./Component/designs/register";
+import Navbar from "./Component/designs/navbar";
+import ProductCard from "./Component/designs/productcard";
+import Cart from "./Component/designs/cart";
 if (localStorage.token) {
   Setauthtoken(localStorage.token);
 }
@@ -55,6 +60,7 @@ function App() {
       <BrowserRouter>
         <HeaderDecider />
         <Alertss />
+
         <Routes>
           <Route path="/" element={<Productlist />} />
 
@@ -62,7 +68,14 @@ function App() {
           <Route path="/product/:id" element={<Spacificproduct />} />
 
           <Route path="/register" element={<Register />} />
-          <Route path="/dashboard" element={<Dashboard />} />
+          <Route
+            path="/dashboard"
+            element={
+              <Protected>
+                <Dashboard />
+              </Protected>
+            }
+          />
           <Route path="/changepassword" element={<Changepassword />} />
           <Route path="/addproduct" element={<AddProduct />} />
         </Routes>

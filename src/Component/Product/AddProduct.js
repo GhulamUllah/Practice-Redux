@@ -1,10 +1,13 @@
+/* eslint-disable no-unused-vars */
 import { Alert, Button, CircularProgress, TextField } from "@mui/material";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Navigate, useNavigate } from "react-router-dom";
 import { addproduct } from "../../Redux/reducer/action/productactions";
-
+import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
+import { storage } from "../../firebase";
+import { async } from "@firebase/util";
 export default function AddProduct() {
   const auth = useSelector((state) => state.Auth);
   const dispatch = useDispatch();
@@ -16,10 +19,12 @@ export default function AddProduct() {
   let [brand, setbrand] = useState();
   let [price, setprice] = useState();
   let [catagery, setcatagery] = useState();
-  let [images, setimages] = useState();
+  let [images, setimages] = useState([]);
   let [instock, setinstock] = useState();
   let [discount, setDiscount] = useState();
   let [addp, setaddp] = useState();
+  const [fileprogress, setfileprogress] = useState();
+  const [preview, setpreview] = useState(null);
   fetch("http://localhost:5000/product")
     .then((res) => res.json())
     .then((data) => setaddp(data.data));
@@ -57,7 +62,30 @@ export default function AddProduct() {
   if (errors == "Product Created Sucessfully") {
     navigate("/");
   }
-
+  const handleupload = (e) => {
+    const file = e.target.files[0];
+    setpreview(URL.createObjectURL(file));
+    const storage_ = ref(storage, "images" + "/" + file.name);
+    const percentage = uploadBytesResumable(storage_, file);
+    percentage.on(
+      "state_change",
+      (bytes) => {
+        console.log((bytes.bytesTransferred / bytes.totalBytes) * 100);
+        setfileprogress((bytes.bytesTransferred / bytes.totalBytes) * 100);
+      },
+      (error) => {
+        console.log(error);
+      },
+      async () => {
+        try {
+          const url = await getDownloadURL(storage_);
+          setimages([url]);
+        } catch (error) {
+          console.log(error);
+        }
+      }
+    );
+  };
   return (
     <div className="Login" id="add">
       <form onSubmit={handlechange}>
@@ -78,6 +106,8 @@ export default function AddProduct() {
           variant="outlined"
           onChange={(e) => setproductDescription(e.target.value)}
         />
+        <input type="file" onChange={handleupload}></input>
+        {preview && <img src={preview} />}
         <TextField
           sx={{ mt: 2, width: 370 }}
           id="outlined-basic"

@@ -3,6 +3,9 @@ import {
   Alert_controler_error,
   Alert_controler_success,
   Load_user,
+  Load_USER_ATTEMPT,
+  Load_USER_FAILED,
+  Load_USER_SUCCESS,
   Login_controler,
   Logout_controler,
   Resgister_user,
@@ -29,13 +32,17 @@ export let loaduser = () => async (dispatch) => {
     Setauthtoken(localStorage.token);
   }
   try {
+    dispatch({ type: Load_USER_ATTEMPT });
     let user = await axios.get("http://localhost:5000/user");
     console.log(user);
     dispatch({
       type: Load_user,
       payload: user,
     });
+    dispatch({ type: Load_USER_SUCCESS });
   } catch (error) {
+    dispatch({ type: Load_USER_FAILED });
+
     // dispatch({
     //   type: Alert_controler_error,
     //   payload: error.response.data.message,
